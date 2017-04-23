@@ -3,6 +3,7 @@ package log
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+import scala.util.Try
 import scala.util.matching.Regex
 
 case class Request(thread: String, user: String, ip: String, action: Action, timestamp: LocalDateTime)
@@ -18,7 +19,8 @@ object Request {
       case LogLine(thread, timestamp, user, ip, text) =>
         for {
           action <- parseAction(text)
-        } yield Request(thread, user, ip, action, parseTime(timestamp))
+          time <- parseTime(timestamp)
+        } yield Request(thread, user, ip, action, time)
       case _ => None
     }
   }
@@ -36,7 +38,9 @@ object Request {
   }
 
   private def parseTime(timeString: String) = {
-    LocalDateTime.from(DateFormat.parse(timeString))
+    Try(LocalDateTime.from(DateFormat.parse(timeString)))
+      .toOption
+      .orElse(Some(LocalDateTime.MIN))
   }
 }
 
