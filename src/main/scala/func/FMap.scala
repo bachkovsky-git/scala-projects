@@ -25,13 +25,13 @@ case class FuncMap[K, V](f: K => Option[V]) extends FMap[K, V] {
   override def get(x: K): Option[V] = f(x)
 
   override def put(key: K, value: V): FMap[K, V] = FuncMap {
-    case x if x == key => Some(value)
-    case x => f(x)
+    case `key` => Some(value)
+    case x     => f(x)
   }
 
   override def delete(key: K): FMap[K, V] = FuncMap {
-    case x if x == key => None
-    case x => f(x)
+    case `key` => None
+    case x     => f(x)
   }
 }
 
