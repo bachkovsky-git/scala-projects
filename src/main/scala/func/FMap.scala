@@ -1,7 +1,5 @@
 package func
 
-import func.FMap.fromList
-
 trait FMap[K, V] {
   def apply(key: K): Option[V] = get(key)
 
@@ -15,9 +13,9 @@ trait FMap[K, V] {
 object FMap {
   def empty[K, V](): FMap[K, V] = FuncMap(_ => None)
 
-  def fromList[K, V](list: List[(K, V)]): FMap[K, V] = list match {
-    case Nil => empty()
-    case (k, v) :: tail => fromList(tail).put(k, v)
+  def apply[K, V](list: List[(K, V)]): FMap[K, V] = list match {
+    case Nil            => empty()
+    case (k, v) :: tail => FMap(tail).put(k, v)
   }
 }
 
@@ -36,7 +34,7 @@ case class FuncMap[K, V](f: K => Option[V]) extends FMap[K, V] {
 }
 
 object Test extends App {
-  val map = fromList((1, "A") :: (3, "B") :: (5, "C") :: Nil)
+  val map = FMap((1, "A") :: (3, "B") :: (5, "C") :: Nil)
 
   val map1 = map.put(1, "KEK").put(2, "SOS").delete(3)
 
