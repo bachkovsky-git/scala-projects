@@ -11,27 +11,25 @@ def size[A](tree: Tree[A]): Int = tree match {
   case Branch(left, right) => size(left) + size(right) + 1
 }
 
-size(Leaf(1))
-size(Branch(Leaf(0), Leaf(1)))
-size(Branch(Leaf(0), Branch(Leaf(0), Leaf(1))))
-size(Branch(Leaf(0), Branch(Leaf(0), Branch(Leaf(0), Leaf(1)))))
-size(tree)
+assert(size(Leaf(1)) == 1)
+assert(size(Branch(Leaf(0), Leaf(1))) == 3)
+assert(size(Branch(Leaf(0), Branch(Leaf(0), Leaf(1)))) == 5)
+assert(size(Branch(Leaf(0), Branch(Leaf(0), Branch(Leaf(0), Leaf(1))))) == 7)
 
 def maximum(tree: Tree[Int]): Int = tree match {
   case Leaf(n)             => n
   case Branch(left, right) => maximum(left) max maximum(right)
 }
-
-maximum(tree)
-maximum(Branch(Leaf(20), Branch(Leaf(0), Branch(Leaf(30), Leaf(1)))))
+assert(maximum(tree) == 33)
+assert(maximum(Branch(Leaf(20), Branch(Leaf(0), Branch(Leaf(30), Leaf(1))))) == 30)
 
 def depth[A](tree: Tree[A]): Int = tree match {
   case Leaf(_)             => 1
   case Branch(left, right) => (depth(left) max depth(right)) + 1
 }
 
-depth(Leaf(1))
-depth(tree)
+assert(depth(Leaf(1)) == 1)
+assert(depth(tree) == 4)
 
 def map[A, B](tree: Tree[A])(f: A => B): Tree[B] = {
   val fMap = map(_: Tree[A])(f)
@@ -41,8 +39,7 @@ def map[A, B](tree: Tree[A])(f: A => B): Tree[B] = {
     case Branch(left, right) => Branch(fMap(left), fMap(right))
   }
 }
-
-map(tree)("\"" + _.toString + "\"")
+assert(map(Branch(Leaf(1), Leaf(2)))(_ * 2) == Branch(Leaf(2), Leaf(4)))
 
 def fold[A, B](tree: Tree[A])(map: A => B)(reduce: (B, B) => B): B = {
   val subReduce = fold(_: Tree[A])(map)(reduce)
@@ -66,14 +63,7 @@ def map1[A, B](tree: Tree[A])(f: A => B): Tree[B] = {
   fold(tree)(mapLeaf) { (left, right) => Branch(left, right) }
 }
 
-size(tree)
-size1(tree)
-
-maximum(tree)
-maximum1(tree)
-
-depth(tree)
-depth1(tree)
-
-map(tree)("\"" + _.toString + "\"")
-map1(tree)("\"" + _.toString + "\"")
+assert (size(tree) == size1(tree))
+assert(maximum(tree) == maximum1(tree))
+assert(depth(tree) == depth1(tree))
+assert(map(tree)("\"" + _.toString + "\"") == map1(tree)("\"" + _.toString + "\""))
