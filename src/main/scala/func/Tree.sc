@@ -4,6 +4,8 @@ case class Leaf[A](value: A) extends Tree[A]
 
 case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
 
+def leaf[A](a: A): Tree[A] = Leaf(a)
+
 val tree = Branch(Branch(Leaf(11), Branch(Leaf(2), Leaf(33))), Leaf(4))
 
 def size[A](tree: Tree[A]): Int = tree match {
@@ -59,8 +61,7 @@ def depth1[A](tree: Tree[A]): Int =
   fold(tree) { _ => 1 } { (left, right) => (left max right) + 1 }
 
 def map1[A, B](tree: Tree[A])(f: A => B): Tree[B] = {
-  val mapLeaf: (A) => Tree[B] = x => Leaf(f(x))
-  fold(tree)(mapLeaf) { (left, right) => Branch(left, right) }
+  fold(tree)(x => leaf(f(x))) { (left, right) => Branch(left, right) }
 }
 
 assert (size(tree) == size1(tree))
