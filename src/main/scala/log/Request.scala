@@ -43,4 +43,3 @@ object Request {
       .orElse(Some(LocalDateTime.MIN))
   }
 }
-

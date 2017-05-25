@@ -3,7 +3,7 @@ package log
 import java.nio.file.Paths.get
 
 import scala.io.Source
-import scala.language.postfixOps
+// import scala.language.postfixOps
 
 object LogAnalyzer extends App {
   args match {

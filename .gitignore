@@ -24,6 +24,8 @@
 # Mongo Explorer plugin:
 .idea/**/mongoSettings.xml
 
+.idea
+
 ## File-based project format:
 *.iws
 
@@ -59,3 +61,4 @@ project/plugins/project/
 ### Scala template
 *.class
 *.log
+.ensime_cache

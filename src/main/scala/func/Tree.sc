@@ -68,3 +68,43 @@ assert (size(tree) == size1(tree))
 assert(maximum(tree) == maximum1(tree))
 assert(depth(tree) == depth1(tree))
 assert(map(tree)("\"" + _.toString + "\"") == map1(tree)("\"" + _.toString + "\""))
+
+sealed trait BTree[+A] {
+  def foldr[B](init: B)(f: (A, B) => B): B = this match {
+    case End           => init
+    case Fork(l, x, r) => f(x, (l foldr (r foldr init)(f))(f))
+  }
+
+  def map[B](f: A => B): BTree[B] = this match {
+    case End => End
+    case Fork(l, x, r) => Fork(l map f, f(x), r map f)
+  }
+
+  def size: Int = foldr(0)((_, size) => size + 1)
+
+  def depth: Int = this match {
+    case End           => 0
+    case Fork(l, _, r) => (l.depth max r.depth) + 1
+  }
+}
+
+case object End extends BTree[Nothing]
+
+case class Fork[A](left: BTree[A], x: A, right: BTree[A]) extends BTree[A]
+
+val bTree: BTree[Int] = Fork(
+  Fork(
+    Fork(End, 1, End),
+    2,
+    Fork(
+      Fork(End, 3, End),
+      5,
+      Fork(End, 6, End))
+  ),
+  4,
+  Fork(End, 7, End)
+)
+
+assert(bTree.foldr(0) {_ + _} == 28)
+assert(bTree.size == 7)
+assert(bTree.depth == 4)
