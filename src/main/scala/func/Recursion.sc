@@ -1,10 +1,12 @@
 def product(xs: List[Double]): Double =
   xs.foldRight(1d)(_ * _)
 
-def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B =
-  as match {
-    case Nil     => z
-    case x :: xs => f(x, foldRight(xs, z)(f))
+//A, => B - lazy eval for tail
+def foldRight[A, B](as: Seq[A], z: B)(f: (A, => B) => B): B =
+  if (as.isEmpty) {
+    z
+  } else {
+    f(as.head, foldRight(as.tail, z)(f))
   }
 
 foldRight(List(1, 2, 3), Nil: List[Int])(_ :: _)
@@ -40,3 +42,23 @@ hasSubsequence(List(1, 2, 3, 5, 1, 2, 3, 4), List(2, 3, 4))
 
 hasSubsequence(List(1, 2, 3, 4), List(3, 2))
 hasSubsequence(List(1, 2, 3, 4), List(1, 2, 3, 4, 5))
+
+//works with lazy foldRight
+def headOption[A](as: Seq[A]): Option[A] =
+  foldRight(as, Option.empty[A]) { (a, _) => Some(a) }
+
+assert(headOption(Stream.from(1)).contains(1))
+assert(headOption(Stream.empty).isEmpty)
+
+def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] =
+  f(z) map { case (a, s) => a #:: unfold(s)(f) } getOrElse Stream.empty
+
+unfold(1)(i => if (i < 5) Some(i, i + 1) else None).toList
+
+def fibs: Stream[BigInt] =
+  unfold((BigInt(0), BigInt(1))) { case (p, n) =>
+    val next = p + n
+    Option(next, (n, next))
+  }
+
+fibs.take(10).startsWith(Seq(0, 1))
