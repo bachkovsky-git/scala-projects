@@ -32,6 +32,8 @@ object Random {
 
   def int: Rand[Int] = State(_.nextInt)
 
+  def boolean: Rand[Boolean] = int map (_ % 2 == 0)
+
   def nonNegativeInt: Rand[Int] = int map {
     case (Int.MinValue) => Int.MaxValue
     case (i)            => abs(i)

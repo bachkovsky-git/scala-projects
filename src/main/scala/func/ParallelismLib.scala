@@ -2,10 +2,12 @@ package func
 
 import java.util.concurrent.{ExecutorService, Executors, Future, TimeUnit}
 
-import func.ParrallelismLib.Par.toParOps
+import func.ParallelismLib.Par.toParOps
+
+import scala.language.implicitConversions
 
 
-object ParrallelismLib extends App {
+object ParallelismLib extends App {
 
   type Par[A] = ExecutorService => Future[A]
 
