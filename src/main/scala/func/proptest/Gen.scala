@@ -28,7 +28,7 @@ object Gen {
 
   def weighted[A](g1: (Gen[A], Double), g2: (Gen[A], Double)): Gen[A] = (g1, g2) match {
     case ((gen1, d1), (gen2, d2)) => double flatMap { d =>
-      if (d < abs(d1 / d2)) gen1 else gen2
+      if (d < d1 / (d1 + d2)) gen1 else gen2
     }
   }
 }
