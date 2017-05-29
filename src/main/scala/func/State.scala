@@ -52,16 +52,6 @@ object State {
     c <- rc
   } yield f(a, b, c)
 
-  def sequence[S, A](fs: List[State[S, A]]): State[S, List[A]] = State { initState =>
-    var list = List.empty[A]
-    var currentState = initState
-
-    for (f <- fs) {
-      val (a, nextState) = f.run(currentState)
-      list = list :+ a
-      currentState = nextState
-    }
-
-    (list, currentState)
-  }
+  def sequence[S, A](fs: List[State[S, A]]): State[S, List[A]] =
+    fs.foldRight(unit[S, List[A]](Nil))((f, acc) => map2(f, acc)(_ :: _))
 }

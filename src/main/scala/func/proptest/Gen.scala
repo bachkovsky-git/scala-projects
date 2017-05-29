@@ -19,8 +19,7 @@ object Gen {
   def choose(start: Int, stopExclusive: Int): Gen[Int] =
     Gen(Random nonNegativeLessThan (stopExclusive - start) map (_ + start))
 
-  def union[A](g1: Gen[A], g2: Gen[A]): Gen[A] =
-    boolean flatMap {
+  def union[A](g1: Gen[A], g2: Gen[A]): Gen[A] = boolean flatMap {
       if (_) g1 else g2
     }
 
