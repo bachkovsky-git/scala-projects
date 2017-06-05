@@ -15,6 +15,8 @@ object Gen {
 
   def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = g.listOfN(unit(n))
 
+  def listOf[A](g: Gen[A]): SGen[List[A]] = SGen { listOfN(_, g) }
+
   def choose(start: Int, stopExclusive: Int): Gen[Int] =
     Gen(Random nonNegativeLessThan (stopExclusive - start) map (_ + start))
 
@@ -86,11 +88,18 @@ case class Prop(run: (TestCases, Random) => Result) {
 
 
 case class Gen[A](sample: Rand[A]) {
+  def map[B](f: (A) => B): Gen[B] = Gen(sample.map(f))
+
   def flatMap[B](f: A => Gen[B]): Gen[B] = Gen(sample.flatMap(f(_).sample))
 
   def listOfN(size: Gen[Int]): Gen[List[A]] = size flatMap { n =>
     Gen(sequence(List.fill(n)(sample)))
   }
+
+  def unsized: SGen[A] = SGen(_ => this)
 }
 
-case class SGen[+A](forSize: Int => Gen[A])
+case class SGen[+A](forSize: Int => Gen[A]) {
+  def map[B](f: A => B): SGen[B] = SGen {forSize(_).map(f)}
+  def flatMap[B](f: A => SGen[B]): SGen[B] = SGen { i => forSize(i).flatMap(f(_).forSize(i)) }
+}
