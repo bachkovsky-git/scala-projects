@@ -1,3 +1,5 @@
+import func.Streams.unfold
+
 def product(xs: List[Double]): Double =
   xs.foldRight(1d)(_ * _)
 
@@ -50,8 +52,7 @@ def headOption[A](as: Seq[A]): Option[A] =
 assert(headOption(Stream.from(1)).contains(1))
 assert(headOption(Stream.empty).isEmpty)
 
-def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] =
-  f(z) map { case (a, s) => a #:: unfold(s)(f) } getOrElse Stream.empty
+
 
 unfold(1)(i => if (i < 5) Some(i, i + 1) else None).toList
 

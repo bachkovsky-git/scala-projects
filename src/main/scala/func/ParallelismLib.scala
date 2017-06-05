@@ -22,17 +22,11 @@ object ParallelismLib extends App {
       Map2Future(af, bf, f)
     }
 
-    def map3[A, B, C, D](a: Par[A], b: Par[B], c: Par[C])(f: (A, B, C) => D): Par[D] = {
-      join {
-        map2(a, b) { (a, b) => map(c) { cc => f(a, b, cc) } }
-      }
-    }
+    def map3[A, B, C, D](a: Par[A], b: Par[B], c: Par[C])(f: (A, B, C) => D): Par[D] =
+      map2(a, b) { (a, b) => map(c) { cc => f(a, b, cc) } } flatMap identity
 
-    def map4[A, B, C, D, E](a: Par[A], b: Par[B], c: Par[C], d: Par[D])(f: (A, B, C, D) => E): Par[E] = {
-      join {
-        map3(a, b, c) { (a, b, c) => map(d) { dd => f(a, b, c, dd) } }
-      }
-    }
+    def map4[A, B, C, D, E](a: Par[A], b: Par[B], c: Par[C], d: Par[D])(f: (A, B, C, D) => E): Par[E] =
+      map3(a, b, c) { (a, b, c) => map(d) { dd => f(a, b, c, dd) } } flatMap identity
 
     def map[A, B](pa: Par[A])(f: A => B): Par[B] =
       (pa map2 unit()) ((a, _) => f(a))
