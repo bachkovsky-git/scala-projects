@@ -2,10 +2,7 @@ package func
 
 import java.util.concurrent.{ExecutorService, Executors, Future, TimeUnit}
 
-import func.ParallelismLib.Par.toParOps
-
-import scala.language.implicitConversions
-
+import func.ParallelismLib.Par.ParOps
 
 object ParallelismLib extends App {
 
@@ -109,9 +106,7 @@ object ParallelismLib extends App {
     }
 
     /* Gives us infix syntax for `Par`. */
-    implicit def toParOps[A](p: Par[A]): ParOps[A] = new ParOps(p)
-
-    class ParOps[A](p: Par[A]) {
+    implicit class ParOps[A](p: Par[A]) {
       def runIn(es: ExecutorService): Future[A] = Par.run(es)(p)
 
       def map2[B, C](pb: Par[B])(f: (A, B) => C): Par[C] = Par.map2(p, pb)(f)
@@ -121,9 +116,7 @@ object ParallelismLib extends App {
       def flatMap[B](f: A => Par[B]): Par[B] = Par.flatMap(p)(f)
     }
 
-    implicit def toParOps[A](p: List[A]): ListParOps[A] = ListParOps(p)
-
-    case class ListParOps[A](p: List[A]) {
+    implicit class ListParOps[A](p: List[A]) {
       def parMap[B](f: A => B): Par[List[B]] = Par.parMap(p)(f)
     }
 
