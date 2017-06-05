@@ -7,8 +7,6 @@ import func.proptest.Prop.{FailedCase, SuccessCount, TestCases}
 import func.{Random, State}
 
 object Gen {
-  def listOf[A](a: Gen[A]): Gen[List[A]] = ???
-
   def unit[A](a: => A): Gen[A] = Gen(State.unit(a))
 
   def boolean: Gen[Boolean] = Gen(Random.boolean)
@@ -99,7 +97,7 @@ case class Gen[A](sample: Rand[A]) {
   def unsized: SGen[A] = SGen(_ => this)
 }
 
-case class SGen[+A](forSize: Int => Gen[A]) {
+case class SGen[A](forSize: Int => Gen[A]) {
   def map[B](f: A => B): SGen[B] = SGen {forSize(_).map(f)}
   def flatMap[B](f: A => SGen[B]): SGen[B] = SGen { i => forSize(i).flatMap(f(_).forSize(i)) }
 }
