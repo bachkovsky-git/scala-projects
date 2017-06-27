@@ -1,10 +1,8 @@
 package func.typeclass.monads
 
-import cats.data.Writer
+import cats.data.{Reader, Writer}
 import cats.implicits._
 import cats.{Eval, Id, Monad}
-
-import scala.collection.immutable
 
 
 object Monads extends App {
@@ -106,8 +104,8 @@ object Monads extends App {
   val res0: (Vector[String], Int) = slowfactorial(5).run
   println(res0)
 
-  import scala.concurrent._
   import scala.concurrent.ExecutionContext.Implicits.global
+  import scala.concurrent._
   import scala.concurrent.duration._
 
   val res1: Seq[(Vector[String], Int)] = Await.result(Future.sequence(Vector(
@@ -115,4 +113,42 @@ object Monads extends App {
     Future(slowfactorial(3).run)
   )), 5.seconds)
   println(res1)
+
+  //Reader
+  case class Db(usernames: Map[Int, String], passwords: Map[String, String])
+
+  type DbReader[A] = Reader[Db, A]
+
+  def findUsername(userId: Int): DbReader[Option[String]] =
+    Reader(_.usernames.get(userId))
+
+  def checkPassword(username: String, password: String): DbReader[Boolean] =
+    Reader(_.passwords.get(username).contains(password))
+
+  def checkLogin(userId: Int, password: String): DbReader[Boolean] =
+    for {
+      userName <- findUsername(userId)
+      pwdOk <- userName.map {
+        un => checkPassword(un, password)
+      } getOrElse {
+        false.pure[DbReader]
+      }
+    } yield pwdOk
+
+  val db = Db(
+    Map(
+      1 -> "dade",
+      2 -> "kate",
+      3 -> "margo"
+    ),
+    Map(
+      "dade"  -> "zerocool",
+      "kate"  -> "acidburn",
+      "margo" -> "secret"
+    )
+  )
+  checkLogin(1, "zerocool").run(db)
+  checkLogin(4, "davinci").run(db)
+
+
 }
