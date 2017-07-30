@@ -3,7 +3,6 @@ package log
 import java.nio.file.Paths.get
 
 import scala.io.Source
-// import scala.language.postfixOps
 
 object LogAnalyzer extends App {
   args match {
@@ -24,12 +23,12 @@ object LogAnalyzer extends App {
 
   private def parseLogs(logDir: String) = {
     val requests = for {
-      logFile <- get(logDir).toFile.listFiles
+      logFile <- get(logDir).toFile.listFiles.view
       if logFile.getName.startsWith("SystemOut")
       logLine <- Source.fromFile(logFile).getLines
       if logLine.length < 5000 && logLine.contains("doaction=")
     } yield Request(logLine)
 
-    requests.flatten
+    requests.force.flatten
   }
 }

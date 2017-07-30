@@ -3,6 +3,8 @@ package log
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+import log.Action.{GoAction, RegularAction}
+
 import scala.util.Try
 import scala.util.matching.Regex
 

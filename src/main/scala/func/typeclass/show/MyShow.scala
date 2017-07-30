@@ -8,5 +8,5 @@ trait MyShow[A] { self =>
 }
 
 object MyShow {
-  def apply[A](implicit instance: MyShow[A]): MyShow[A] = instance
+  def apply[A: MyShow]: MyShow[A] = implicitly[MyShow[A]]
 }
