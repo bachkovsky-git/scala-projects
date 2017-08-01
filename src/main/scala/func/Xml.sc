@@ -1,3 +1,4 @@
+import scala.xml.Elem
 
 val elem =
   <a>
@@ -15,7 +16,7 @@ case class CCTherm(description: String,
                    condition: Int) {
   override def toString: String = description
 
-  def toXML =
+  def toXML: Elem =
     <ccterm>
       <description>{description}</description>
       <yearMade>{yearMade}</yearMade>
@@ -26,16 +27,14 @@ case class CCTherm(description: String,
     </ccterm>
 }
 
-/*
 def fromXml(node: scala.xml.Node): CCTherm = CCTherm(
   (node \ "description").text,
-  (node \ "yearMade").text,
+  (node \ "yearMade").text.toInt,
   (node \ "dateObtained").text,
-  (node \ "bookPrice").text,
-  (node \ "purchasePrice").text,
-  (node \ "condition").text,
+  (node \ "bookPrice").text.toInt,
+  (node \ "purchasePrice").text.toInt,
+  (node \ "condition").text.toInt,
 )
-*/
 
 val therm = CCTherm(
   description = "hot dog #5",
@@ -46,8 +45,8 @@ val therm = CCTherm(
   condition = 9
 )
 
-val xmlTherm = therm.toXML
-//val therm1 = fromXml(xmlTherm)
+val xmlTherm: Elem = therm.toXML
+val therm1: CCTherm = fromXml(xmlTherm)
 
 <a>
   Feels
