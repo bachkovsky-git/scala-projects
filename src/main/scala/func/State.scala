@@ -53,5 +53,5 @@ object State {
   } yield f(a, b, c)
 
   def sequence[S, A](fs: List[State[S, A]]): State[S, List[A]] =
-    fs.foldRight(unit[S, List[A]](Nil))((f, acc) => map2(f, acc)(_ :: _))
+    fs.foldRight(unit[S, List[A]](Nil))((f: State[S, A], acc: State[S, List[A]]) => map2(f, acc)(_ :: _))
 }
