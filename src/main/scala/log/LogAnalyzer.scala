@@ -5,7 +5,6 @@ import java.time.{Duration, LocalDateTime}
 
 import log.Action.SqlTransaction
 
-import scala.collection.{SeqView, TraversableView}
 import scala.io.Source
 
 object LogAnalyzer extends App {
@@ -24,11 +23,11 @@ object LogAnalyzer extends App {
     }
 
     val sqlTransactions: (Request) => Boolean = req => req.action match {
-      case _: SqlTransaction                                              => true
-      case _                                                              => false
+      case _: SqlTransaction => true
+      case _                 => false
     }
 
-    val validationQueries: ((String, TraversableView[Request, Array[Option[Request]]])) => Boolean = {
+    val validationQueries: ((String, Traversable[Request])) => Boolean = {
       case (_, reqs) => reqs.size == 3 && reqs.exists(_.text.contains("SELECT 1 FROM"))
     }
 
@@ -49,7 +48,7 @@ object LogAnalyzer extends App {
   }
 
   def parseLogs(logDir: String) = {
-    val result: SeqView[Option[Request], Array[Option[Request]]] = for {
+    val result = for {
       logFile <- get(logDir).toFile.listFiles.view
       if logFile.getName.startsWith("SystemOut")
       logLine <- Source.fromFile(logFile).getLines.toTraversable.par
