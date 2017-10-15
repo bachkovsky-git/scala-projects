@@ -20,7 +20,7 @@ object Request {
   private val Transaction: Regex = ".*SQL\\((\\d+)\\).*".r
   private val EndTransaction: Regex = "(\\d+) end!!!.*".r
 
-  def apply(logLine: String): Option[Request] = {
+  def tryParse(logLine: String): Option[Request] = {
     logLine match {
       case LogLine(thread, timestamp, user, ip, text) =>
         for {

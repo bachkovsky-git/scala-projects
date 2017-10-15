@@ -1,58 +1,62 @@
 package log
 
 import java.nio.file.Paths.get
-import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
+import java.time.{Duration, LocalDateTime}
 
-import log.Action.{TransactionAction, TransactionEnd, TransactionStart}
+import log.Action.SqlTransaction
 
-import scala.collection.SeqView
+import scala.collection.{SeqView, TraversableView}
 import scala.io.Source
 
 object LogAnalyzer extends App {
   args match {
     case Array(path) => analyzePath(path)
-    case _ => println("Specify log directory")
+    case _           => println("Specify log directory")
   }
 
   def analyzePath(logDir: String): Unit = {
     val start = System.currentTimeMillis
 
-    val transactionsOnly: (Request) => Boolean = req => req.action match {
-      case _: TransactionStart | _: TransactionAction | _: TransactionEnd => true
+    implicit val dateOrder: Ordering[LocalDateTime] = (x: LocalDateTime, y: LocalDateTime) => x.compareTo(y)
+
+    case class Transaction(id: String, start: LocalDateTime, end: LocalDateTime) {
+      val duration: Duration = Duration.between(start, end)
+    }
+
+    val sqlTransactions: (Request) => Boolean = req => req.action match {
+      case _: SqlTransaction                                              => true
       case _                                                              => false
     }
 
-    implicit val dateOrder: Ordering[LocalDateTime]  = (x: LocalDateTime, y: LocalDateTime) => x.compareTo(y)
+    val validationQueries: ((String, TraversableView[Request, Array[Option[Request]]])) => Boolean = {
+      case (_, reqs) => reqs.size == 3 && reqs.exists(_.text.contains("SELECT 1 FROM"))
+    }
 
-    val requests = parseLogs(logDir)
-                   .flatten
-                   .filter(transactionsOnly)
+    val requestsStream = parseLogs(logDir)
+
+    val requests = requestsStream
+                   .filter(sqlTransactions)
                    .groupBy(_.action.name)
-                   .filter { case (_, trs) => trs.exists(_.text.contains("SELECT 1 FROM")) }
-                   .mapValues(trs => {
-                     val forced = trs.force
-                     val start = forced.head.timestamp
-                     val end = forced.last.timestamp
-                     (start, end, start.until(end, ChronoUnit.MILLIS))
-                   })
-//                   .filter { case (_, (_, _, dur)) => dur > 2000 }
+                   .filter(validationQueries)
+                   .map { case (id, trs) => Transaction(id, trs.head.timestamp, trs.last.timestamp) }
                    .toList
-                   .sortBy(_._2._1)
+                   .sortBy(_.start)
 
     println("|| transactionid || start || end || duration (ms) ||")
-    requests.foreach(r => println(s"|${r._1}|${r._2._1}|${r._2._2}|${r._2._3}|"))
-    //todo add some analyze
-    //    requests.foreach(println)
+    requests.foreach(r => println(s"|${r.id}|${r.start}|${r.end}|${r.duration.toMillis}|"))
 
     println(s"duration = ${System.currentTimeMillis - start}ms")
   }
 
-  private def parseLogs(logDir: String): SeqView[Option[Request], Array[Option[Request]]] = for {
-    logFile <- get(logDir).toFile.listFiles.view
-    if logFile.getName.startsWith("SystemOut")
-    logLine <- Source.fromFile(logFile).getLines.toTraversable.par
-    if logLine.length < 5000
-  } yield Request(logLine)
+  def parseLogs(logDir: String) = {
+    val result: SeqView[Option[Request], Array[Option[Request]]] = for {
+      logFile <- get(logDir).toFile.listFiles.view
+      if logFile.getName.startsWith("SystemOut")
+      logLine <- Source.fromFile(logFile).getLines.toTraversable.par
+      if logLine.length < 5000
+    } yield Request.tryParse(logLine)
+
+    result.flatten
+  }
 
 }

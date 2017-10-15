@@ -11,8 +11,12 @@ object Action {
     override def name: String = "Go: " + goType
   }
 
-  case class TransactionStart(name: String) extends Action
-  case class TransactionAction(name: String) extends Action
-  case class TransactionEnd(name: String) extends Action
+  abstract class SqlTransaction extends Action {
+    def id: String = name
+  }
+
+  case class TransactionStart(name: String) extends SqlTransaction
+  case class TransactionAction(name: String) extends SqlTransaction
+  case class TransactionEnd(name: String) extends SqlTransaction
 }
 
