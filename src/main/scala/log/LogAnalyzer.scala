@@ -5,6 +5,7 @@ import java.time.{Duration, LocalDateTime}
 
 import log.Action.SqlTransaction
 
+import scala.collection.SeqView
 import scala.io.Source
 
 object LogAnalyzer extends App {
@@ -42,20 +43,18 @@ object LogAnalyzer extends App {
                    .sortBy(_.start)
 
     println("|| transactionid || start || end || duration (ms) ||")
-    requests.foreach(r => println(s"|${r.id}|${r.start}|${r.end}|${r.duration.toMillis}|"))
+    requests.foreach(r => println(s"| ${r.id} | ${r.start} | ${r.end} | ${r.duration.toMillis} |"))
 
     println(s"duration = ${System.currentTimeMillis - start}ms")
   }
 
-  def parseLogs(logDir: String) = {
-    val result = for {
-      logFile <- get(logDir).toFile.listFiles.view
+  type View[A] = SeqView[A, Seq[_]]
+
+  def parseLogs(logDir: String): View[Request] = for {
+      logFile <- get(logDir).toFile.listFiles.toStream.view
       if logFile.getName.startsWith("SystemOut")
-      logLine <- Source.fromFile(logFile).getLines.toTraversable.par
+      logLine <- Source.fromFile(logFile).getLines.toStream.par
       if logLine.length < 5000
-    } yield Request.tryParse(logLine)
-
-    result.flatten
-  }
-
+      request <- Request.tryParse(logLine)
+    } yield request
 }
