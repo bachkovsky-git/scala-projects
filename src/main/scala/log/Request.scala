@@ -11,7 +11,7 @@ import scala.util.matching.Regex
 case class Request(thread: String, user: String, ip: String, action: Action, timestamp: LocalDateTime, text: String)
 
 object Request {
-  private val LogLine: Regex = """(http-[bn]io-\d+-exec-\d+)#.*\s+(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{3})\s\[.*\s(.*)\s(.*)\]\s.*?\):?\s(.*)""".r
+  private val LogLine: Regex = """(.*?)#.*\s+(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{3})\s\[.*\s(.*)\s(.*)\]\s.*?\):?\s(.*)""".r
   private val DoAction: Regex = """.*doaction=(\w+).*""".r
   private val Type: Regex = """.*type=(\w+).*""".r
   private val DateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
